@@ -2,19 +2,12 @@
 $( document ).ready(function() {
 
   $('#submit').on('click', function(event){
-
     sendMessage($('#send').val());
     $('#send').val('');
     event.preventDefault();
   });
 
-  // $('#change').on('keydown', function(event){
-  //   var username = $('#user').val();
-  //   var roomname = $('#room').val();
 
-  //   getUrlParameter('username');
-  //   getUrlParameter('roomname');
-  // });
 
   var getUrlParameter = function (sParam){
     var sPageURL = window.location.search.substring(1);
@@ -56,7 +49,38 @@ $( document ).ready(function() {
   };
 
 
+  var save = function(friend){
+    var result = load();
+    // debugger;
+    if(!Array.isArray(result)){
+      result = [];
+    }
+    var place;
+    var exists = false;
+    for(var i = 0; i < result.length; i++){
+      if(result[i] === friend){
+        exists = true;
+        place = i;
+      }
+    }
+    if(!exists){
+      result.push(friend);
+    }else{
+      result.splice(place, 1);
+    }
+    result = JSON.stringify(result);
+    console.log(result);
+    localStorage.setItem('friendsList', result);
+    //console.log(result);
+  };
 
+  var load = function(){
+    var result = localStorage.getItem('friendsList');
+    if(result === ''){
+      result = '""';
+    }
+    return JSON.parse(result);
+  };
   var getMessage = function(filter, callback) {
 
 
@@ -118,6 +142,7 @@ $( document ).ready(function() {
       var text = $('<div class="message"></div>');
       var room = $('<div class="room"></div>');
 
+
       room.text(message[i].roomname).html();
       user.text(message[i].username).html();
       text.text(message[i].text).html();
@@ -130,6 +155,10 @@ $( document ).ready(function() {
       // message[i].text;
     }
 
+    $('.chat').on('click', function(event){
+      save($(this).find('.username').text());
+    });
+
   };
 
   var run = function() {
@@ -141,6 +170,7 @@ $( document ).ready(function() {
     }
     getMessage(data, updateScreen);
     getMessage('order=-createdAt', updateRoomList);
+
   };
 
   var username = getUrlParameter('username');
@@ -148,6 +178,8 @@ $( document ).ready(function() {
   $('#user').val(username);
   $('#room').val(roomname);
   run();
+
+
   setInterval(run, 1000);
 
 
