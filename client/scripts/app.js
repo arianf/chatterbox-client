@@ -8,6 +8,14 @@ $( document ).ready(function() {
     event.preventDefault();
   });
 
+  // $('#change').on('keydown', function(event){
+  //   var username = $('#user').val();
+  //   var roomname = $('#room').val();
+
+  //   getUrlParameter('username');
+  //   getUrlParameter('roomname');
+  // });
+
   var getUrlParameter = function (sParam){
     var sPageURL = window.location.search.substring(1);
     var sURLVariables = sPageURL.split('&');
@@ -21,12 +29,15 @@ $( document ).ready(function() {
   };
 
   var sendMessage = function(text) {
-
+    var roomname = getUrlParameter('roomname');
     var message = {
       username: getUrlParameter('username'),
       text: text,
-      roomname: '4chan'
+      roomname: roomname
     };
+    if(roomname === 'all'){
+      delete message.roomname;
+    }
 
     $.ajax({
       // always use this url
@@ -46,12 +57,13 @@ $( document ).ready(function() {
 
 
 
-  var getMessage = function(data, callback) {
+  var getMessage = function(filter, callback) {
+
 
     $.ajax({
       url: 'https://api.parse.com/1/classes/chatterbox',
       type: 'GET',
-      data: data,
+      data: filter,
       contentType: 'application/json',
       success: function (data) {
         callback(data.results);
@@ -64,24 +76,48 @@ $( document ).ready(function() {
 
   };
 
-  var updateRoomList = function() {
+  var updateRoomList = function(message) {
 
+
+    var roomlist = [];
+
+    for (var i = 0; i < message.length; i++) {
+      if(_.indexOf(roomlist, message[i].roomname) === -1){
+        roomlist.push(message[i].roomname);
+      }
+    }
+
+    $('#nav').empty();
+    var username = getUrlParameter('username');
+    $('#nav').append('<a href="?roomname=all&username=' + username + '"">All Rooms</a> | ');
+
+
+
+    for(var i = 0; i < roomlist.length; i++){
+      if(roomlist[i] !== undefined){
+        var roomname = $('<a href="?roomname=' + roomlist[i] + '&username=' + username + '" class="roomname"></a>');
+
+        roomname.text(roomlist[i]).html();
+        $('#nav').append(roomname);
+        // console.log(roomlist);
+
+        if(i !== roomlist.length-1){
+          $('#nav').append(' | ');
+        }
+      }
+    }
   }
 
   var updateScreen = function(message) {
     var messageTag = "#message";
     // console.log(message);
     $(messageTag).empty();
-    var roomlist = [];
     for (var i = 0; i < message.length; i++) {
       var chat = $('<div class="chat"></div>');
-      var room = $('<div class="room"></div>');
       var user = $('<div class="username"></div>');
       var text = $('<div class="message"></div>');
+      var room = $('<div class="room"></div>');
 
-      if(_.indexOf(roomlist, message[i].roomname) === -1){
-        roomlist.push(message[i].roomname);
-      }
       room.text(message[i].roomname).html();
       user.text(message[i].username).html();
       text.text(message[i].text).html();
@@ -90,33 +126,30 @@ $( document ).ready(function() {
       $(chat).append(room);
       $(chat).append(text);
       $(messageTag).append(chat);
+
       // message[i].text;
     }
 
-    $('#nav').empty();
-    for(var i = 0; i < roomlist.length; i++){
-      if(roomlist[i] === undefined){
-        roomlist[i] = 'undefined';
-      }
-      var roomname = $('<a href="?roomname=' + roomlist[i] + '" class="roomname"></a>');
-
-      roomname.text(roomlist[i]).html();
-      $('#nav').append(roomname);
-      console.log(roomlist);
-
-      if(i !== roomlist.length-1){
-        $('#nav').append(' | ');
-      }
-    }
   };
 
-  getMessage();
-  setInterval(function(){
+  var run = function() {
     var roomname = getUrlParameter('roomname');
-    data = 'where={"roomname":"'+ roomname + '"}';
-    getMessage(roomname, updateScreen);
+    if(roomname === 'all'){
+      data = 'order=-createdAt';
+    }else {
+      data = 'order=-createdAt&where={"roomname":"'+ roomname + '"}';
+    }
+    getMessage(data, updateScreen);
+    getMessage('order=-createdAt', updateRoomList);
+  };
 
-  }, 1000);
+  var username = getUrlParameter('username');
+  var roomname = getUrlParameter('roomname');
+  $('#user').val(username);
+  $('#room').val(roomname);
+  run();
+  setInterval(run, 1000);
+
 
   // setInterval(function(){ sendMessage('hello from HR 25!'); }, 10000);
 
