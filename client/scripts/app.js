@@ -45,15 +45,16 @@ $( document ).ready(function() {
   };
 
 
-  var getMessage = function() {
+
+  var getMessage = function(data, callback) {
+
     $.ajax({
-      // always use this url
       url: 'https://api.parse.com/1/classes/chatterbox',
       type: 'GET',
-      data: 'order=-createdAt',
+      data: data,
       contentType: 'application/json',
       success: function (data) {
-        updateScreen(data.results);
+        callback(data.results);
       },
       error: function (data) {
         // see: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -63,21 +64,23 @@ $( document ).ready(function() {
 
   };
 
+  var updateRoomList = function() {
 
+  }
 
   var updateScreen = function(message) {
     var messageTag = "#message";
     // console.log(message);
     $(messageTag).empty();
-    var array = [];
+    var roomlist = [];
     for (var i = 0; i < message.length; i++) {
       var chat = $('<div class="chat"></div>');
       var room = $('<div class="room"></div>');
       var user = $('<div class="username"></div>');
       var text = $('<div class="message"></div>');
 
-      if(_.indexOf(array, message[i].roomname) === -1){
-        array.push(message[i].roomname);
+      if(_.indexOf(roomlist, message[i].roomname) === -1){
+        roomlist.push(message[i].roomname);
       }
       room.text(message[i].roomname).html();
       user.text(message[i].username).html();
@@ -90,10 +93,30 @@ $( document ).ready(function() {
       // message[i].text;
     }
 
+    $('#nav').empty();
+    for(var i = 0; i < roomlist.length; i++){
+      if(roomlist[i] === undefined){
+        roomlist[i] = 'undefined';
+      }
+      var roomname = $('<a href="?roomname=' + roomlist[i] + '" class="roomname"></a>');
+
+      roomname.text(roomlist[i]).html();
+      $('#nav').append(roomname);
+      console.log(roomlist);
+
+      if(i !== roomlist.length-1){
+        $('#nav').append(' | ');
+      }
+    }
   };
 
   getMessage();
-  setInterval(getMessage, 1000);
+  setInterval(function(){
+    var roomname = getUrlParameter('roomname');
+    data = 'where={"roomname":"'+ roomname + '"}';
+    getMessage(roomname, updateScreen);
+
+  }, 1000);
 
   // setInterval(function(){ sendMessage('hello from HR 25!'); }, 10000);
 
