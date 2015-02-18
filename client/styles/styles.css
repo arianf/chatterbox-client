@@ -55,14 +55,16 @@ form input[type=text] {
     margin-right: 10px;
     font-size: 12px;
     padding: 5px;
+    width: 70%;
 }
-#send {
+/*#send {
     width: 395px;
-}
-.change {
+}*/
+/*.change {
     display: inline;
     width: 120px;
 }
+*/
 .chat {
     padding: 5px;
     margin-bottom: 5px;

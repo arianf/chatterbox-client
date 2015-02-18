@@ -8,6 +8,7 @@
     <!-- dependencies -->
     <script src="bower_components/jquery/jquery.min.js"></script>
     <script src="bower_components/underscore/underscore-min.js"></script>
+    <script src="bower_components/backbone/backbone.js"></script>
     <!-- your scripts -->
     <script src="env/config.js"></script>
     <script src="scripts/app.js"></script>
@@ -15,24 +16,21 @@
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-      <form>
-        <label for="send">Send Message</label><br>
-        <input type="text" placeholder="Type your message here" id="send" />
-        <input type="submit" id="submit" />
+      <div class="spinner"><img src="images/spiffygif_46x46.gif"></div>
+      <form action="#" id="send" method="POST">
+        <input type="text" name="message" id="message" />
+        <input type="submit" name="submit" class="submit" />
       </form>
-      <form id="change" method="get">
-        <label for="send">Username</label>
-        <input type="text" placeholder="Type Username" name="username" class="change" id="user" />
-        <label for="send">Room</label>
-        <input type="text" placeholder="Create room" name="roomname" class="change" id="room" />
-        <input type="submit"/>
-      </form>
-      <div id="nav">
-
-      </div>
-      <div id="message">
-      <!-- Your HTML goes here! -->
-      </div>
+      <div id="chats"></div>
     </div>
+    <script>
+      $(function(){
+        var messages = new Messages();
+        messages.loadMsgs();
+        var formView = new FormView({el: $('#main'), collection: messages});
+        var messagesView = new MessagesView({el: $('#chats'), collection: messages});
+        setInterval( messages.loadMsgs.bind(messages), 1000);
+      });
+    </script>
   </body>
 </html>
